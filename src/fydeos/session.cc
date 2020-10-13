@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <boost/filesystem.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 #include "core/posix/signal.h"
 #include "core/posix/exec.h"
@@ -128,9 +130,24 @@ int session(){
                   return;
                 }
 
+                // return;
                 // if (!single_window){
                 //   return;
                 // }
+
+                //net.fydeos.interface
+                std::ifstream ifs("/run/containers/android-anbox/container.pid");
+                std::string data{std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()};
+                              
+                std::vector<std::string> argv;
+                argv.push_back(std::string("--mode=postchroot-anbox"));
+                argv.push_back(std::string("--log_tag=arc-postchroot-anbox"));
+
+                std::map<std::string, std::string> env;
+                env.insert({"CONTAINER_PID", boost::trim_copy(data)});                
+
+                auto child = core::posix::exec("/usr/sbin/arc-setup", argv, env, core::posix::StandardStream::empty);
+                child.dont_kill_on_cleanup();
 
                 constexpr const char *default_appmgr_package{"org.anbox.appmgr"};
                 constexpr const char *default_appmgr_component{"org.anbox.appmgr.AppViewActivity"};
@@ -144,8 +161,9 @@ int session(){
                   launch_intent, 
                   graphics::Rect::Invalid, 
                   // graphics::Rect(600, 500),
-                  /*wm::Stack::Id::Default,*/ 
-                  wm::Stack::Id::Freeform);
+                  // wm::Stack::Id::Default 
+                  wm::Stack::Id::Freeform
+                );                
               });                           
             });            
 
