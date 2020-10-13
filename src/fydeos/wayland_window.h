@@ -77,7 +77,7 @@ public:
   std::unique_ptr<zcr_remote_surface_v1> remote_shell_surface_;
   std::unique_ptr<zcr_input_method_surface_v1> input_surface_;  
   std::thread message_thread_;
-  anbox::wm::Task::Id task_;
+  // anbox::wm::Task::Id task_;
   std::shared_ptr<wm::Manager> window_manager_;
 
   // std::shared_ptr<anbox::graphics::Renderer> renderer_;
@@ -113,8 +113,7 @@ public:
     const std::string &title);
   
   virtual ~WaylandWindow(){    
-    DEBUG("WaylandWindow::~WaylandWindow");
-    __asm__("int3");
+    DEBUG("WaylandWindow::~WaylandWindow");    
   }
 
   bool init();
@@ -129,7 +128,7 @@ public:
     //   dynamic_cast<const fydeos::WaylandRenderer*>(this)
     // );
     return (EGLNativeWindowType)dynamic_cast<const fydeos::WaylandRenderer*>(this);
-    return (EGLNativeWindowType)task_;    
+    // return (EGLNativeWindowType)task_;    
   }
 
 public:

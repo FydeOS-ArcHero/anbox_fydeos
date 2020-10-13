@@ -97,8 +97,7 @@ WaylandWindow::WaylandWindow(
   const std::string &title):
     display_(display),
     globals_(globals),
-    window_manager_(window_manager),
-    task_(task),    
+    window_manager_(window_manager),    
     scale_(scale),
     wm::Window(renderer, task, frame, title){    
 
@@ -681,7 +680,9 @@ void WaylandWindow::shell_surface_bounds_changed(void *data,
 			       int32_t height,
 			       uint32_t bounds_change_reason){
 
-  DEBUG("surface_listener bounds_changed %d %d %d %d %d %d %d", display_id_hi, display_id_lo, x, y, width, height, bounds_change_reason);  
+  WaylandWindow *window = (WaylandWindow *)data;
+
+  DEBUG("surface_listener bounds_changed %d %d %d %d %d %d %d %d", window->task(), display_id_hi, display_id_lo, x, y, width, height, bounds_change_reason);  
 
 	// ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_DRAG_MOVE = 1,
 	// /**
@@ -708,8 +709,7 @@ void WaylandWindow::shell_surface_bounds_changed(void *data,
 	//  * the window bounds is resized for PIP
 	//  */
 	// ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_MOVE_PIP = 7,
-
-  WaylandWindow *window = (WaylandWindow *)data;
+  
   window->current_rect_ = anbox::graphics::Rect(x, y, x + width, y + height);  
   
   zcr_remote_surface_v1_set_bounds(
@@ -726,8 +726,8 @@ void WaylandWindow::shell_surface_bounds_changed(void *data,
     width, height
   );      
   
-  window->update_frame(window->current_rect_);
-  window->window_manager_->resize_task(window->task(), window->current_rect_, 3);  
+  window->update_frame(window->current_rect_);    
+  window->window_manager_->resize_task(window->task(), window->current_rect_, 3);    
 }
 
 void WaylandWindow::shell_surface_drag_started(void *data,
