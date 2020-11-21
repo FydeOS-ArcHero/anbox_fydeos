@@ -1,0 +1,198 @@
+import("//build/util/process_version.gni")
+import("//build/config/features.gni")
+import("//third_party/protobuf/proto_library.gni")
+
+config("anbox_config") {
+  include_dirs = [    
+    ".",
+    "src",
+    "GLESv1_dec",
+    "GLESv2_dec",
+    "external/process-cpp-minimal/include",
+    "external/glm",
+    "external/xdg",
+    "external/android-emugl/shared/OpenglCodecCommon",
+    "external/android-emugl/host/include",
+    "external/android-emugl/host/libs/GLESv1_dec",
+    "external/android-emugl/host/libs/GLESv2_dec",
+    "external/android-emugl/host/libs/renderControl_dec",
+    "external/android-emugl/host/include/libOpenglRender",
+    "external/android-emugl/shared",
+    #"external/protobuf/src/google/protobuf/stubs",
+    #"external/protobuf/src",
+
+    #"android/opengl/shared/OpenglCodecCommon",
+
+    #"$root_gen_dir/third_party/anbox/src",
+    "$target_gen_dir/src",
+    #"$target_gen_dir/el_gen",
+    "$target_gen_dir/el_gen/external/android-emugl/host/include",    
+  ]   
+
+  #include_dirs += [ "//third_party/properties-cpp:properties_cpp_config" ]  
+}
+
+config("anbox_headers") {
+  include_dirs = [
+    ".",
+    "src",
+    "external/android-emugl/host/include",
+    "$target_gen_dir/el_gen/external/android-emugl/host/include",
+  ]
+
+  #defines = [ "LIBFEATURE_SUPPORT_IMPLEMENTATION" ]
+  #if (is_debug) {
+  #  defines += [ "ANGLE_FEATURE_UTIL_LOG_VERBOSE" ]
+  #}
+
+  configs = [
+    #"//build/config/compiler:exceptions",
+  ]
+}
+
+config("clang_warnings") {
+  cflags_cc = [ "-std=c++14" ]
+  cflags_objcc = [ "-std=c++14" ]
+
+  if (is_clang) {
+    # Upstream uses self-assignment to avoid warnings.
+    cflags = [ 
+      "-Wno-self-assign",
+      "-Wexit-time-destructors"
+    ]
+
+    cflags_cc = [      
+      #"-stdlib=libc++",
+      #"-fPIC",
+      #"-Wno-error=missing-field-initializers",
+      #"-Wno-error=implicit-fallthrough",
+    ]    
+
+    cflags += [ "-Wno-exit-time-destructors" ]
+    cflags_cc += [ "-Wno-exit-time-destructors" ]
+    cflags_objcc += [ "-Wno-exit-time-destructors" ]
+
+    cflags += [ "-fexceptions" ]
+    cflags_cc += [ "-fexceptions" ]
+    cflags_objcc += [ "-fexceptions" ]
+
+    libs = [ "protobuf" ]
+    #ldflags = [ "-lprotobuf" ]
+  }
+}
+
+proto_library("anbox_proto") {
+  sources = [
+    "src/anbox/protobuf/anbox_bridge.proto",
+    "src/anbox/protobuf/anbox_container.proto",
+    "src/anbox/protobuf/anbox_rpc.proto",
+  ]
+
+  proto_out_dir = "third_party/anbox/src"
+  generate_python = false
+}
+
+process_version("anbox_config_version") {
+  template_file = "src/anbox/build/config.h.in"
+  output = "$target_gen_dir/src/anbox/build/config.h"
+
+  extra_args = [
+    "-e",
+    "ANBOX_VERSION=\"local-build\"",
+    "-e",
+    "ANBOX_RESOURCE_DIR_FULL=\"/tmp\"",
+    "-e",
+    "ANBOX_STATEDIR_FULL=\"/tmp\"",
+  ]
+}
+
+static_library("anbox_sdk") {
+  sources = [    
+    "src/anbox/bridge/android_api_stub.cpp",
+    "src/anbox/bridge/platform_api_skeleton.cpp",
+    "src/anbox/bridge/platform_message_processor.cpp",
+    "src/anbox/runtime.cpp",
+    "src/anbox/platform/null/platform.cpp",
+    "src/anbox/network/published_socket_connector.cpp",
+    "src/anbox/network/socket_connection.cpp",
+    "src/anbox/network/local_socket_messenger.cpp",
+    "src/anbox/network/socket_helper.cpp",
+    "src/anbox/network/base_socket_messenger.cpp",
+    "src/anbox/network/credentials.cpp",
+    "src/anbox/common/wait_handle.cpp",   
+    "src/anbox/common/fd.cpp",
+    "src/anbox/logger.cpp",
+    #"src/anbox/wm/window.cpp",
+    #"src/anbox/wm/single_window_manager.cpp",
+    "src/anbox/rpc/channel.cpp",
+    "src/anbox/rpc/message_processor.cpp",
+    "src/anbox/rpc/pending_call_cache.cpp",
+    "src/anbox/rpc/connection_creator.cpp",    
+    "src/anbox/application/database.cpp",
+    "src/anbox/application/launcher_storage.cpp",
+    "src/anbox/system_configuration.cpp",
+    "src/anbox/graphics/rect.cpp",    
+    "src/anbox/utils.cpp",
+    "external/xdg/xdg.cpp",
+  ]  
+
+  deps = [
+    #":test1",
+    #"//third_party/anbox/src/anbox/input:input",
+    ":anbox_proto",
+
+    #"//third_party/anbox/external/android-emugl/host/tools/emugen",
+    "//third_party/boost:boost",
+    "//third_party/protobuf:protobuf_lite",
+    #"//third_party/protobuf:protoc_lib",
+    #"//third_party/protobuf:protobuf_full",
+    "//third_party/properties-cpp:properties_cpp",
+
+    ":anbox_config_version",
+  ]
+
+  defines = [
+    "USE_PROTOBUF_CALLBACK_HEADER",
+    "MESA_EGL_NO_X11_HEADERS",
+    "ENABLE_LXC2_SUPPORT",
+    "WAYLAND_SUPPORT",
+
+    "BOOST_ALL_NO_LIB",
+    "BOOST_ATOMIC_DYN_LINK",
+    "BOOST_CHRONO_DYN_LINK",
+    "BOOST_DATE_TIME_DYN_LINK",
+    "BOOST_FILESYSTEM_DYN_LINK",
+    "BOOST_HAS_ICU",
+    "BOOST_LOG_HAS_PTHREAD_MUTEX_ROBUST",
+    "BOOST_LOG_USE_AVX2",
+    "BOOST_LOG_USE_SSSE3",
+    "BOOST_LOG_WITHOUT_EVENT_LOG",
+    "BOOST_SPIRIT_USE_PHOENIX_V3",
+    "BOOST_SYSTEM_DYN_LINK",
+    "BOOST_THREAD_DONT_USE_CHRONO",
+    "BOOST_THREAD_POSIX",
+    "BOOST_THREAD_BUILD_DLL",
+    "BOOST_THREAD_USE_DLL",
+    "DATE_TIME_INLINE",    
+    "BOOST_SYSTEM_NO_DEPRECATED",
+    "BOOST_LOG_WITHOUT_DEBUG_OUTPUT",
+    "BOOST_LOG_BUILDING_THE_LIB",
+    "BOOST_ALL_DYN_LINK",
+    "BOOST_LOG_DLL",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    
+    "//build/config/compiler:exceptions",
+    #"//build/config/compiler:no_exceptions",
+    "//build/config/compiler:rtti",
+    ":clang_warnings",    
+    "//third_party/angle:angle_feature_support_config",    
+  ]
+  public_configs = [ ":anbox_config" ]
+  public_configs += [ "//third_party/properties-cpp:properties_cpp_config" ]  
+  #configs += [ "//third_party/properties-cpp:properties_cpp_config" ]
+  public_configs += [ "//third_party/boost:boost_config" ]
+}
