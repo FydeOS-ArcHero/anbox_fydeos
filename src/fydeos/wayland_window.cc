@@ -293,7 +293,8 @@ bool WaylandWindow::init(){
   zcr_remote_surface_v1_set_title(remote_shell_surface_.get(), title().data());
   // zcr_remote_surface_v1_set_extra_title(remote_shell_surface_.get(), "title2");
   zcr_remote_surface_v1_set_window_type(remote_shell_surface_.get(), ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_NORMAL);
-  zcr_remote_surface_v1_set_frame(remote_shell_surface_.get(), ZCR_REMOTE_SURFACE_V1_FRAME_TYPE_AUTOHIDE);           
+  // zcr_remote_surface_v1_set_frame(remote_shell_surface_.get(), ZCR_REMOTE_SURFACE_V1_FRAME_TYPE_AUTOHIDE);           
+  zcr_remote_surface_v1_set_frame(remote_shell_surface_.get(), ZCR_REMOTE_SURFACE_V1_FRAME_TYPE_NORMAL);           
   // zcr_remote_surface_v1_set_aspect_ratio(remote_shell_surface_.get(), 0, 0);  
   zcr_remote_surface_v1_set_top_inset(remote_shell_surface_.get(), top_inset_);
   zcr_remote_surface_v1_set_frame_buttons(remote_shell_surface_.get(), 
@@ -307,9 +308,18 @@ bool WaylandWindow::init(){
   std::unique_ptr<zaura_surface> aura_surface(
     static_cast<zaura_surface*>(zaura_shell_get_aura_surface(globals_.aura_shell.get(), surface_.get()))
   );  
+  
+  char applicationId[64];  
+  sprintf(applicationId, "org.chromium.arc.%d", task());  
+  zcr_remote_surface_v1_set_app_id(remote_shell_surface_.get(), applicationId);
+  // zcr_remote_surface_v1_set_can_maximize(remote_shell_surface_.get());
 
   zaura_surface_set_frame(aura_surface.get(), ZAURA_SURFACE_FRAME_TYPE_NORMAL);
   zaura_surface_set_frame_colors(aura_surface.get(), 0, 0);
+
+  // zcr_remote_surface_v1_set_systemui_visibility(remote_shell_surface_.get(), ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY);
+  // zcr_remote_surface_v1_set_systemui_visibility(remote_shell_surface_.get(), ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE);
+  
 
   // zcr_remote_surface_v1_ack_configure(remote_shell_surface_.get(), 1);
 
@@ -630,7 +640,37 @@ void WaylandWindow::shell_surface_close(void *data,
 void WaylandWindow::shell_surface_state_type_changed(void *data,
 				   struct zcr_remote_surface_v1 *zcr_remote_surface_v1,
 				   uint32_t state_type){
-  DEBUG("surface_listener state_type_changed");
+  WaylandWindow *window = (WaylandWindow *)data;
+
+  DEBUG("surface_listener state_type_changed %d", state_type);      
+
+  bool needCommit = false;
+
+  switch(state_type){
+  case ZCR_REMOTE_SHELL_V1_STATE_TYPE_MINIMIZED:    
+    zcr_remote_surface_v1_minimize(zcr_remote_surface_v1);
+    needCommit = true;
+    break;
+  case ZCR_REMOTE_SHELL_V1_STATE_TYPE_NORMAL:		    
+    zcr_remote_surface_v1_restore(zcr_remote_surface_v1);
+    needCommit = true;
+    // zcr_remote_surface_v1_activate()
+    break;
+	case ZCR_REMOTE_SHELL_V1_STATE_TYPE_MAXIMIZED:	
+	case ZCR_REMOTE_SHELL_V1_STATE_TYPE_FULLSCREEN:
+	case ZCR_REMOTE_SHELL_V1_STATE_TYPE_PINNED:	
+	case ZCR_REMOTE_SHELL_V1_STATE_TYPE_TRUSTED_PINNED:	
+	case ZCR_REMOTE_SHELL_V1_STATE_TYPE_MOVING:	
+	case ZCR_REMOTE_SHELL_V1_STATE_TYPE_RESIZING:	
+	case ZCR_REMOTE_SHELL_V1_STATE_TYPE_LEFT_SNAPPED:
+	case ZCR_REMOTE_SHELL_V1_STATE_TYPE_RIGHT_SNAPPED:
+	case ZCR_REMOTE_SHELL_V1_STATE_TYPE_PIP:
+    return;
+  }  
+
+  if (needCommit){
+    wl_surface_commit(window->surface_.get());
+  }  
 }
 
 void WaylandWindow::shell_surface_configure(void *data,
