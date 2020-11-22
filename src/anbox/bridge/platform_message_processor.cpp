@@ -27,8 +27,9 @@ namespace bridge {
 PlatformMessageProcessor::PlatformMessageProcessor(
     const std::shared_ptr<network::MessageSender> &sender,
     const std::shared_ptr<PlatformApiSkeleton> &server,
-    const std::shared_ptr<rpc::PendingCallCache> &pending_calls)
-    : rpc::MessageProcessor(sender, pending_calls), server_(server) {}
+    const std::shared_ptr<rpc::PendingCallCache> &pending_calls,
+    const std::shared_ptr<rpc::Channel> &channel)
+    : rpc::MessageProcessor(sender, pending_calls), server_(server), channel_(channel) {}
 
 PlatformMessageProcessor::~PlatformMessageProcessor() {}
 
@@ -53,9 +54,12 @@ void PlatformMessageProcessor::process_event_sequence(
   if (seq.has_window_state_update())
     server_->handle_window_state_update_event(seq.window_state_update());
 
-  if (seq.has_application_list_update())
+  if (seq.has_application_list_update()){
     server_->handle_application_list_update_event(
         seq.application_list_update());
+
+    channel_->send_event(seq);        
+  }
 }
 }  // namespace anbox
 }  // namespace network

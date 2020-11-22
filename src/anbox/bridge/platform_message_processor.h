@@ -19,6 +19,7 @@
 #define ANBOX_BRIDGE_PLATFORM_MESSAGE_PROCESSOR_H_
 
 #include "anbox/rpc/message_processor.h"
+#include "anbox/rpc/channel.h"
 
 namespace anbox {
 namespace bridge {
@@ -28,13 +29,15 @@ class PlatformMessageProcessor : public rpc::MessageProcessor {
   PlatformMessageProcessor(
       const std::shared_ptr<network::MessageSender> &sender,
       const std::shared_ptr<PlatformApiSkeleton> &server,
-      const std::shared_ptr<rpc::PendingCallCache> &pending_calls);
+      const std::shared_ptr<rpc::PendingCallCache> &pending_calls,
+      const std::shared_ptr<rpc::Channel> &channel);
   ~PlatformMessageProcessor();
 
   void dispatch(rpc::Invocation const &invocation) override;
   void process_event_sequence(const std::string &event) override;
 
  private:
+  std::shared_ptr<rpc::Channel> channel_;
   std::shared_ptr<PlatformApiSkeleton> server_;
 };
 }  // namespace anbox
