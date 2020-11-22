@@ -31,10 +31,19 @@ void WaylandPointer::Enter(void* data,
 
   WaylandPointer *pointer = (WaylandPointer*)data;
 
-  pointer->location_.SetPoint(
-    wl_fixed_to_double(surface_x), 
-    wl_fixed_to_double(surface_y)
-  );
+  pointer->window_ = WaylandWindow::getWindowFromSurface(surface);
+
+  int xx = pointer->window_->current_rect_.left() + wl_fixed_to_double(surface_x);
+  int yy = pointer->window_->current_rect_.top() + wl_fixed_to_double(surface_y); 
+
+  pointer->location_.SetPoint(xx, yy);
+
+  // std::vector<input::Event> event;
+  // pointer->input_manager_->push_finger_motion2(xx, yy, 0, event);  
+  // if (event.size() > 0){
+  //   pointer->input_manager_->touch_->send_events(event);
+  //   DEBUG("WaylandPointer::Motion %d %d %d", xx, yy, event.size());
+  // }  
 }
 
 void WaylandPointer::Leave(void* data,
@@ -44,6 +53,9 @@ void WaylandPointer::Leave(void* data,
   DEBUG("WaylandPointer::Leave");     
 
   WaylandPointer *pointer = (WaylandPointer*)data;
+
+  // pointer->input_manager_->clean_finger(0);  
+  pointer->window_ = nullptr;  
 }
 
 void WaylandPointer::Motion(void* data,
@@ -51,12 +63,16 @@ void WaylandPointer::Motion(void* data,
                             uint32_t time,
                             wl_fixed_t surface_x,
                             wl_fixed_t surface_y) {                              
-  DEBUG("WaylandPointer::Motion");
+  // DEBUG("WaylandPointer::Motion");
 
   WaylandPointer *pointer = (WaylandPointer*)data;
 
-  int xx = pointer->current_window_location_.x() + wl_fixed_to_double(surface_x);
-  int yy = pointer->current_window_location_.y() + wl_fixed_to_double(surface_y);
+  int xx = pointer->window_->current_rect_.left() + wl_fixed_to_double(surface_x);
+  int yy = pointer->window_->current_rect_.top() + wl_fixed_to_double(surface_y);
+
+  pointer->location_.SetPoint(xx, yy);
+
+  DEBUG("WaylandPointer::Motion %d %d", xx, yy);
 
   std::vector<input::Event> event;
   pointer->input_manager_->push_finger_motion(xx, yy, 0, event);  
@@ -81,8 +97,7 @@ void WaylandPointer::Button(void* data,
   int changed_button;
   switch (button) {
     case BTN_LEFT:
-      // changed_button = EF_LEFT_MOUSE_BUTTON;
-      
+      // changed_button = EF_LEFT_MOUSE_BUTTON;      
       break;
     case BTN_MIDDLE:
       // changed_button = EF_MIDDLE_MOUSE_BUTTON;
@@ -112,7 +127,7 @@ void WaylandPointer::Button(void* data,
     
   if (event.size() > 0){
     pointer->input_manager_->touch_->send_events(event);
-    DEBUG("WaylandPointer::Button %d %d %d %d", button, state, pointer->location_.x(), pointer->location_.y());
+    DEBUG("WaylandPointer::Button %d %d %d %d", pointer->location_.x(), pointer->location_.y(), button, state);
   }
 }                              
 

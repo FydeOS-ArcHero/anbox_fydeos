@@ -4,6 +4,7 @@
 #include "wayland_helper.h"
 #include "../anbox/logger.h"
 #include "anbox_input.h"
+#include "wayland_window.h"
 
 #include "ui/gfx/geometry/point_f.h"
 
@@ -12,11 +13,12 @@ namespace anbox{
 class WaylandPointer{
 private:
   std::shared_ptr<wl_pointer> pointer_;
+  WaylandWindow *window_;
 
 public:  
   AnboxInput *input_manager_;
   gfx::PointF location_;
-  gfx::PointF current_window_location_;
+  // gfx::PointF current_window_location_;
 
 public:
   WaylandPointer(
