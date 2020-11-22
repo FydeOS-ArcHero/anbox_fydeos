@@ -29,7 +29,7 @@ PlatformMessageProcessor::PlatformMessageProcessor(
     const std::shared_ptr<PlatformApiSkeleton> &server,
     const std::shared_ptr<rpc::PendingCallCache> &pending_calls,
     const std::shared_ptr<rpc::Channel> &channel)
-    : rpc::MessageProcessor(sender, pending_calls), server_(server), channel_(channel) {}
+    : rpc::MessageProcessor(sender, pending_calls), channel_(channel), server_(server) {}
 
 PlatformMessageProcessor::~PlatformMessageProcessor() {}
 
