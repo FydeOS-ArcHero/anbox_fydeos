@@ -7,10 +7,13 @@
 #include "wayland_touch.h"
 #include "audio_sink.h"
 
+#include "anbox_rpc.pb.h"
+#include "anbox_bridge.pb.h"
+
 namespace anbox{  
 
 WaylandPlatform::WaylandPlatform(const std::shared_ptr<input::Manager> &input_manager):
-  AnboxInput(input_manager){  
+  AnboxInput(input_manager) {
   
   static wl_registry_listener registry_listener = {
     [](void* data, wl_registry* registry, uint32_t id, const char* interface, uint32_t version) {
@@ -214,6 +217,13 @@ std::shared_ptr<wm::Window> WaylandPlatform::create_window(
     return nullptr;
   }  
 
+  // anbox::protobuf::bridge::LaunchApplication parameter_message;
+  anbox::protobuf::rpc::Result message;
+  message.set_id(task);
+  message.set_response(title.c_str());  
+  
+  channel_->send_event(message);
+
   return w;
 }
 
@@ -257,8 +267,6 @@ void WaylandPlatform::shell_activated(void *data,
   }
 
   WaylandWindow *window = (WaylandWindow *)wl_surface_get_user_data(gained_active);
-
-  DEBUG("shell_listener activated %llX %llX %llX", window->surface_.get(), gained_active, lost_active);
   window->window_manager_->set_focused_task(window->task());
   return;  
 

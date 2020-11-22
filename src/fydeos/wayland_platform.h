@@ -7,6 +7,7 @@
 #include "../anbox/platform/base_platform.h"
 #include "../anbox/input/manager.h"
 #include "../anbox/wm/manager.h"
+#include "../anbox/rpc/channel.h"
 
 #include "wayland_helper.h"
 #include "wayland_window.h"
@@ -31,8 +32,9 @@ private:
   std::map<int32_t, std::weak_ptr<wm::Window>> windows_;
   std::shared_ptr<wm::Manager> window_manager_;
   std::shared_ptr<Renderer> renderer_;
+  std::shared_ptr<rpc::Channel> channel_;
 
-  int32_t next_window_id_ = 0;
+  // std::atomic<int> next_window_id_;  
 
   ::fydeos::Globals globals_;
   std::thread message_thread_;
@@ -53,6 +55,9 @@ public:
 
   bool supports_multi_window() const override;  
 
+  void set_rpc_channel(const std::shared_ptr<rpc::Channel> &channel){
+    channel_ = channel;
+  }
 /*
 public:
   void window_deleted(const anbox::wm::Task::Id &task) override {
