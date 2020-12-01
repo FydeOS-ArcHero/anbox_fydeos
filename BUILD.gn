@@ -86,6 +86,7 @@ proto_library("anbox_proto") {
     "src/anbox/protobuf/anbox_bridge.proto",
     "src/anbox/protobuf/anbox_container.proto",
     "src/anbox/protobuf/anbox_rpc.proto",
+    "src/anbox/protobuf/anbox_chrome.proto",
   ]
 
   proto_out_dir = "third_party/anbox/src"

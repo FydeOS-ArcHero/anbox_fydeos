@@ -8,7 +8,6 @@ include_directories(
   ${LIBSYSTEMD_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}
-  ${CMAKE_SOURCE_DIR}  
   ${CMAKE_SOURCE_DIR}/src
   ${CMAKE_SOURCE_DIR}/external
   ${CMAKE_SOURCE_DIR}/external/process-cpp-minimal/include
@@ -66,6 +65,10 @@ protobuf_generate_cpp(
     GENERATED_PROTOBUF_CONTAINER_SRCS GENERATED_PROTOBUF_CONTAINER_HDRS
     ../anbox/protobuf/anbox_container.proto)
 
+protobuf_generate_cpp(
+    GENERATED_PROTOBUF_CHROME_SRCS GENERATED_PROTOBUF_CHROME_HDRS
+    ../anbox/protobuf/anbox_chrome.proto)        
+
 
 add_library(anbox-protobuf
     STATIC
@@ -75,9 +78,12 @@ add_library(anbox-protobuf
     ${GENERATED_PROTOBUF_RPC_HDRS}
     ${GENERATED_PROTOBUF_CONTAINER_SRCS}
     ${GENERATED_PROTOBUF_CONTAINER_HDRS}
+    #{GENERATED_PROTOBUF_CHROME_SRCS}
+    ${GENERATED_PROTOBUF_CHROME_HDRS}
     ../anbox/protobuf/anbox_rpc.proto
     ../anbox/protobuf/anbox_bridge.proto
     ../anbox/protobuf/anbox_container.proto
+    ../anbox/protobuf/anbox_chrome.proto
     ../anbox/protobuf/google_protobuf_guard.cpp)
 target_link_libraries(anbox-protobuf
     ${PROTOBUF_LITE_LIBRARIES})
@@ -293,6 +299,7 @@ set(SOURCES
     ../anbox/protobuf/anbox_bridge.proto
     ../anbox/protobuf/anbox_container.proto
     ../anbox/protobuf/anbox_rpc.proto
+    ../anbox/protobuf/anbox_chrome.proto
     ../anbox/protobuf/google_protobuf_guard.cpp
 
     ../anbox/qemu/adb_message_processor.cpp
@@ -438,11 +445,7 @@ add_library(chromium-wayland2
 target_link_libraries(chromium-wayland2)
 
 add_library(chromium-wayland
-    STATIC
-
-    #/home/$ENV{USER}/chromium_r80/src/third_party/wayland/src/src/wayland-client.c    
-    #/home/$ENV{USER}/chromium_r80/src/third_party/minigbm/src/gbm.c
-    #/home/$ENV{USER}/chromium_r80/src/third_party/minigbm/src/drv.c        
+    STATIC    
 
     /var/cache/chromeos-chrome/chrome-src/src/out_$ENV{BOARD}/Release/gen/third_party/wayland-protocols/src/unstable/linux-dmabuf/linux-dmabuf-unstable-v1-protocol.c    
     /var/cache/chromeos-chrome/chrome-src/src/out_$ENV{BOARD}/Release/gen/third_party/wayland-protocols/src/unstable/fullscreen-shell/fullscreen-shell-unstable-v1-protocol.c
@@ -462,16 +465,12 @@ add_library(chromium-wayland
 )
 target_link_libraries(
   chromium-wayland
-  # chromium-wayland2
-  #/home/$ENV{USER}/chromium_r80/src/out_amd64-generic/Release/obj/ui/ozone/platform/drm/gbm/ozone_platform_gbm.o  
-  #/home/builder/chromiumos_r80-qemu/chroot/build/amd64-qemu2/usr/lib64/libgbm.so
+  # chromium-wayland2  
   /build/$ENV{BOARD}/usr/lib64/libgbm.so
-  /build/$ENV{BOARD}/usr/lib64/libdrm.so
-  #/var/cache/chromeos-chrome/chrome-src/src/out_$ENV{BOARD}/Release//obj/base/libbase_static.a  
-  #/var/cache/chromeos-chrome/chrome-src/src/out_$ENV{BOARD}/Release//obj/base/libbase.a  
+  /build/$ENV{BOARD}/usr/lib64/libdrm.so  
   #/usr/lib64/libwayland-egl.so.1
   #/build/$ENV{BOARD}/usr/lib64/libwayland-egl.so
-  ${WAYLAND_CLIENT_LIBRARIES}
+  ${WAYLAND_CLIENT_LIBRARIES}  
 )
 
 add_library(anbox-core STATIC ${SOURCES})
