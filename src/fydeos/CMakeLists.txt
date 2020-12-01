@@ -78,7 +78,7 @@ add_library(anbox-protobuf
     ${GENERATED_PROTOBUF_RPC_HDRS}
     ${GENERATED_PROTOBUF_CONTAINER_SRCS}
     ${GENERATED_PROTOBUF_CONTAINER_HDRS}
-    #{GENERATED_PROTOBUF_CHROME_SRCS}
+    ${GENERATED_PROTOBUF_CHROME_SRCS}
     ${GENERATED_PROTOBUF_CHROME_HDRS}
     ../anbox/protobuf/anbox_rpc.proto
     ../anbox/protobuf/anbox_bridge.proto
