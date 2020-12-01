@@ -1,0 +1,12 @@
+option optimize_for = LITE_RUNTIME;
+
+package anbox.protobuf.chrome;
+
+message CreatedTask {
+  required int32 id = 1; 
+  required string title = 2;
+}
+
+message RemovedTask {
+  required int32 id = 1; 
+}
