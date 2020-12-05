@@ -5,6 +5,7 @@ package anbox.protobuf.chrome;
 message CreatedTask {
   required int32 id = 1; 
   required string title = 2;
+  required string package_name = 3;
 }
 
 message RemovedTask {
