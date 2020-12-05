@@ -30,7 +30,10 @@
 #include "../anbox/wm/window.h"
 #include "../anbox/wm/manager.h"
 #include "../anbox/graphics/renderer.h"
+#include "../anbox/rpc/channel.h"
 // #include "external/android-emugl/host/include/OpenGLESDispatch/EGLDispatch.h"
+
+#include "anbox_chrome.pb.h"
 
 namespace anbox{
 
@@ -66,19 +69,18 @@ public:
   };
 
 public:  
-  std::shared_ptr<wl_display> display_;
-  // std::unique_ptr<wl_display> display_;
-  std::unique_ptr<wl_registry> registry_;
+  std::shared_ptr<wl_display> display_;    
   std::unique_ptr<wl_surface> surface_;  
-  std::unique_ptr<wl_pointer> pointer_;
+  // std::unique_ptr<wl_pointer> pointer_;
   // std::unique_ptr<zxdg_surface_v6> xdg_surface_;
   // std::unique_ptr<wl_egl_window> window_;
   // std::unique_ptr<wl_shell_surface> shell_surface_;
   std::unique_ptr<zcr_remote_surface_v1> remote_shell_surface_;
-  std::unique_ptr<zcr_input_method_surface_v1> input_surface_;  
-  std::thread message_thread_;
+  // std::unique_ptr<zcr_input_method_surface_v1> input_surface_;  
+  // std::thread message_thread_;
   // anbox::wm::Task::Id task_;
   std::shared_ptr<wm::Manager> window_manager_;
+  std::shared_ptr<rpc::Channel> channel_;
 
   // std::shared_ptr<anbox::graphics::Renderer> renderer_;
   // std::shared_ptr<Renderer> renderer_;
@@ -110,9 +112,20 @@ public:
     const anbox::wm::Task::Id &task, 
     const anbox::graphics::Rect &frame, 
     int scale,
-    const std::string &title);
+    const std::string &title,
+    const std::string &package_name,
+    const std::shared_ptr<rpc::Channel> &channel);
   
   virtual ~WaylandWindow(){    
+    surface_.release();
+    remote_shell_surface_.release();
+
+    anbox::protobuf::chrome::RemovedTask message;
+    message.set_id(task());      
+
+    channel_->call_method("task_removed", &message, nullptr, nullptr);
+
+
     DEBUG("WaylandWindow::~WaylandWindow");    
   }
 

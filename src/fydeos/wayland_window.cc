@@ -94,16 +94,26 @@ WaylandWindow::WaylandWindow(
   const anbox::wm::Task::Id &task, 
   const anbox::graphics::Rect &frame, 
   int scale,
-  const std::string &title):
+  const std::string &title,
+  const std::string &package_name,
+  const std::shared_ptr<rpc::Channel> &channel):
     display_(display),
     globals_(globals),
     window_manager_(window_manager),    
     scale_(scale),
+    channel_(channel),
     wm::Window(renderer, task, frame, title){    
 
   scale_ = 1;
-  current_rect_ = anbox::graphics::Rect(frame.left(), frame.top(), frame.right(), frame.bottom());  
- 
+  current_rect_ = anbox::graphics::Rect(frame.left(), frame.top(), frame.right(), frame.bottom());
+   
+  anbox::protobuf::chrome::CreatedTask message;
+  message.set_id(task);
+  message.set_title(title.c_str());    
+  message.set_package_name(package_name.c_str());    
+  
+  channel_->call_method("task_created", &message, nullptr, nullptr);  
+
   DEBUG("WaylandWindow %d %d %d %d", current_rect_.left(), current_rect_.top(), current_rect_.right(), current_rect_.bottom());
   DEBUG("WaylandWindow %d %d %s", current_rect_.width(), current_rect_.height(), title.data());  
 }
@@ -629,10 +639,10 @@ void WaylandWindow::shell_surface_close(void *data,
   DEBUG("surface_listener close");
 
   WaylandWindow *window = (WaylandWindow *)data;
-  // zcr_remote_shell_v1_destroy(zcr_remote_surface_v1);  
-  // zcr_remote_surface_v1_destroy(zcr_remote_surface_v1);  
+  // zcr_remote_shell_v1_destroy(zcr_remote_surface_v1);    
 
   window->window_manager_->remove_task(window->task());  
+  zcr_remote_surface_v1_destroy(zcr_remote_surface_v1);
 
   // delete window;
 }
