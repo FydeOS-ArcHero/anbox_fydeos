@@ -24,19 +24,24 @@
 
 #include "anbox_rpc.pb.h"
 #include "anbox_bridge.pb.h"
+#include "anbox_chrome.pb.h"
 
 namespace anbox {
 MessageProcessor::MessageProcessor(const std::shared_ptr<network::MessageSender> &sender,
                                    const std::shared_ptr<rpc::PendingCallCache> &pending_calls,
-                                   const std::shared_ptr<AndroidApiSkeleton> &platform_api) :
+                                   const std::shared_ptr<AndroidApiSkeleton> &platform_api,
+                                   const std::shared_ptr<rpc::Channel> &chrome_rpc_channel) :
     rpc::MessageProcessor(sender, pending_calls),
-    platform_api_(platform_api) {
+    platform_api_(platform_api),
+    chrome_rpc_channel_(chrome_rpc_channel) {
 }
 
 MessageProcessor::~MessageProcessor() {
 }
 
 void MessageProcessor::dispatch(rpc::Invocation const& invocation) {
+  ALOGI("== MessageProcessor::dispatch %s", invocation.method_name().c_str());
+
   if (invocation.method_name() == "launch_application")
     invoke(this, platform_api_.get(), &AndroidApiSkeleton::launch_application, invocation);
   else if (invocation.method_name() == "set_focused_task")
@@ -45,6 +50,53 @@ void MessageProcessor::dispatch(rpc::Invocation const& invocation) {
     invoke(this, platform_api_.get(), &AndroidApiSkeleton::remove_task, invocation);
   else if (invocation.method_name() == "resize_task")
     invoke(this, platform_api_.get(), &AndroidApiSkeleton::resize_task, invocation);
+  //////////////////////////////////////////////////////////////////////////////////  
+  else if (invocation.method_name() == "app_created")      
+    invoke(this, this, &MessageProcessor::app_created, invocation);    
+  else if (invocation.method_name() == "app_removed")
+    invoke(this, this, &MessageProcessor::app_removed, invocation);    
+  else if (invocation.method_name() == "task_created")      
+    invoke(this, this, &MessageProcessor::task_created, invocation);    
+  else if (invocation.method_name() == "task_removed")
+    invoke(this, this, &MessageProcessor::task_removed, invocation);      
+}
+
+void MessageProcessor::app_created(anbox::protobuf::bridge::Application const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done) {
+  ALOGI("== MessageProcessor::app_created");
+  chrome_rpc_channel_->call_method("app_created", request, nullptr, nullptr);
+
+  (void)response;
+  (void)done;
+}
+
+void MessageProcessor::app_removed(anbox::protobuf::bridge::Application const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done) {
+  ALOGI("== MessageProcessor::app_removed");                                     
+  chrome_rpc_channel_->call_method("app_removed", request, nullptr, nullptr);                                     
+
+  (void)response;
+  (void)done;
+}
+
+void MessageProcessor::task_created(anbox::protobuf::chrome::CreatedTask const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done) {  
+  chrome_rpc_channel_->call_method("task_created", request, nullptr, nullptr);
+
+  (void)response;
+  (void)done;
+}
+
+void MessageProcessor::task_removed(anbox::protobuf::chrome::RemovedTask const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done) {  
+  chrome_rpc_channel_->call_method("task_removed", request, nullptr, nullptr);
+
+  (void)response;
+  (void)done;
 }
 
 void MessageProcessor::process_event_sequence(const std::string&) {

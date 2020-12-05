@@ -19,21 +19,56 @@
 #define ANBOX_ANDROID_MESSAGE_PROCESSOR_H_
 
 #include "anbox/rpc/message_processor.h"
+#include "anbox/rpc/channel.h"
 
 namespace anbox {
+
+namespace protobuf {
+namespace bridge {
+class Application;
+}
+
+namespace chrome{
+class CreatedTask;
+class RemovedTask;  
+}
+
+namespace rpc {
+class Void;
+} // namespace rpc
+}
+
 class AndroidApiSkeleton;
 class MessageProcessor : public rpc::MessageProcessor {
 public:
     MessageProcessor(const std::shared_ptr<network::MessageSender> &sender,
                      const std::shared_ptr<rpc::PendingCallCache> &pending_calls,
-                     const std::shared_ptr<AndroidApiSkeleton> &platform_api);
+                     const std::shared_ptr<AndroidApiSkeleton> &platform_api,
+                     const std::shared_ptr<rpc::Channel> &chrome_rpc_channel);
     ~MessageProcessor();
 
     void dispatch(rpc::Invocation const& invocation) override;
     void process_event_sequence(const std::string &event) override;
 
+    void app_created(anbox::protobuf::bridge::Application const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done);
+
+    void app_removed(anbox::protobuf::bridge::Application const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done);
+
+    void task_created(anbox::protobuf::chrome::CreatedTask const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done);
+
+    void task_removed(anbox::protobuf::chrome::RemovedTask const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done);                                 
+
 private:
     std::shared_ptr<AndroidApiSkeleton> platform_api_;
+    std::shared_ptr<rpc::Channel> chrome_rpc_channel_;
 };
 } // namespace network
 
