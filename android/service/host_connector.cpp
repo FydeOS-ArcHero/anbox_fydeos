@@ -27,11 +27,11 @@
 #include <array>
 
 namespace anbox {
-HostConnector::HostConnector() :
+HostConnector::HostConnector(const std::shared_ptr<ChromeConnector> &chrome_connector) :    
     socket_(std::make_shared<LocalSocketConnection>("/dev/anbox_bridge")),
     pending_calls_(std::make_shared<rpc::PendingCallCache>()),
     android_api_skeleton_(std::make_shared<AndroidApiSkeleton>()),
-    message_processor_(std::make_shared<MessageProcessor>(socket_, pending_calls_, android_api_skeleton_)),
+    message_processor_(std::make_shared<MessageProcessor>(socket_, pending_calls_, android_api_skeleton_, chrome_connector->get_rpc_channel())),
     rpc_channel_(std::make_shared<rpc::Channel>(pending_calls_, socket_)),
     platform_api_stub_(std::make_shared<PlatformApiStub>(rpc_channel_)),
     running_(false) {

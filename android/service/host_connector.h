@@ -22,6 +22,8 @@
 #include <thread>
 #include <atomic>
 
+#include "chrome_connector.h"
+
 namespace anbox {
 namespace rpc {
 class PendingCallCache;
@@ -33,7 +35,7 @@ class AndroidApiSkeleton;
 class PlatformApiStub;
 class HostConnector {
 public:
-    HostConnector();
+    HostConnector(const std::shared_ptr<ChromeConnector> &chrome_connector);
     ~HostConnector();
 
     void start();
