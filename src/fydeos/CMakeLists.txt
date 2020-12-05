@@ -284,8 +284,8 @@ set(SOURCES
 
     #../anbox/platform/base_platform.cpp
     ../anbox/platform/base_platform.h
-    ../anbox/platform/null/platform.cpp
-    ../anbox/platform/null/platform.h
+    #../anbox/platform/null/platform.cpp
+    #../anbox/platform/null/platform.h
     #../anbox/platform/sdl/audio_sink.cpp
     #../anbox/platform/sdl/audio_sink.h
     #../anbox/platform/sdl/keycode_converter.cpp
@@ -353,8 +353,8 @@ set(SOURCES
     ../anbox/wm/manager.h
     ../anbox/wm/multi_window_manager.cpp
     ../anbox/wm/multi_window_manager.h
-    ../anbox/wm/single_window_manager.cpp
-    ../anbox/wm/single_window_manager.h
+    #../anbox/wm/single_window_manager.cpp
+    #../anbox/wm/single_window_manager.h
     ../anbox/wm/stack.cpp
     ../anbox/wm/stack.h
     ../anbox/wm/task.cpp
