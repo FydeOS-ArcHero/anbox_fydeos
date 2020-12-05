@@ -43,70 +43,6 @@
 
 using namespace anbox;
 
-class ChromePlatformMessageProcessor:
-  public anbox::rpc::MessageProcessor{
-
-public:
-  ChromePlatformMessageProcessor(
-    const std::shared_ptr<anbox::network::MessageSender> &sender,
-    const std::shared_ptr<anbox::rpc::PendingCallCache> &pending_calls,
-    const std::shared_ptr<bridge::AndroidApiStub> &android_api_stub
-  ):anbox::rpc::MessageProcessor(sender, pending_calls), android_api_stub_(android_api_stub){
-    INFO("ChromePlatformMessageProcessor::ChromePlatformMessageProcessor");
-  }
-
-  ~ChromePlatformMessageProcessor(){
-    INFO("ChromePlatformMessageProcessor::~ChromePlatformMessageProcessor");
-  }  
-
-  void dispatch(anbox::rpc::Invocation const &invocation) override {
-    INFO("ChromePlatformMessageProcessor::dispatch %s", invocation.method_name().c_str());
-
-    if (invocation.method_name() == "launch_application"){      
-      anbox::protobuf::bridge::LaunchApplication parameter_message;
-      parameter_message.ParseFromString(invocation.parameters());      
-
-      auto intent = parameter_message.intent();
-      android::Intent launch_intent;
-      launch_intent.package = intent.package();
-      launch_intent.component = intent.component();
-
-      android_api_stub_->launch(launch_intent, graphics::Rect::Invalid, wm::Stack::Id::Freeform);      
-      
-      anbox::protobuf::rpc::Result result_message;
-      // std::unique_ptr<google::protobuf::Closure> callback(
-      //   google::protobuf::NewPermanentCallback<
-      //       ChromePlatformMessageProcessor, ::google::protobuf::uint32,
-      //       typename result_ptr_t<ResultMessage>::type>(
-      //       this, &ChromePlatformMessageProcessor::send_response, invocation.id(), &result_message));
-      send_response(invocation.id(), &result_message);
-    }
-  }
-
-  void process_event_sequence(const std::string &raw_events) override {
-    INFO("ChromePlatformMessageProcessor::process_event_sequence");
-  }
-
-  // void launch_application(anbox::protobuf::bridge::ClipboardData const *request,
-  //                                            anbox::protobuf::rpc::Void *response,
-  //                                            google::protobuf::Closure *done) {
-
-  // }
-
-private:
-  std::shared_ptr<bridge::AndroidApiStub> android_api_stub_;
-};
-
-std::shared_ptr<anbox::rpc::Channel> connect2(
-  std::shared_ptr<anbox::Runtime> &rt,
-  const std::shared_ptr<network::MessageSender> &sender){  
-      
-  return std::make_shared<anbox::rpc::Channel>(
-    std::make_shared<anbox::rpc::PendingCallCache>(),
-    sender
-  );
-}
-
 int session(){
   auto trap = core::posix::trap_signals_for_process(
         {core::posix::Signal::sig_term, core::posix::Signal::sig_int});
@@ -177,9 +113,7 @@ int session(){
           std::make_shared<qemu::PipeConnectionCreator>(gl_server->renderer(), rt));  
 
   boost::asio::deadline_timer appmgr_start_timer(rt->service());      
-
-  // std::shared_ptr<ChromePlatformMessageProcessor> chrome_platform_message;  
-  // std::shared_ptr<rpc::ConnectionCreator> chrome_platform_connect;
+  
   std::shared_ptr<network::Connections<network::SocketConnection>> const chrome_connections_ = std::make_shared<network::Connections<network::SocketConnection>>();
 
   auto bridge_connector = std::make_shared<network::PublishedSocketConnector>(
@@ -196,7 +130,7 @@ int session(){
             android_api_stub->set_rpc_channel(rpc_channel);            
             
             auto server = std::make_shared<bridge::PlatformApiSkeleton>(
-                pending_calls, platform, window_manager, app_db);
+                pending_calls, platform, window_manager, app_db, rpc_channel);
             server->register_boot_finished_handler([&]() {              
 
               DEBUG("Android successfully booted");
@@ -227,44 +161,14 @@ int session(){
                 auto child = core::posix::exec("/usr/sbin/arc-setup", argv, env, core::posix::StandardStream::empty);
                 child.dont_kill_on_cleanup();
 
-#if 0
-                constexpr const char *default_appmgr_package{"org.anbox.appmgr"};
-                constexpr const char *default_appmgr_component{"org.anbox.appmgr.AppViewActivity"};
-
-                android::Intent launch_intent;
-                launch_intent.package = default_appmgr_package;
-                launch_intent.component = default_appmgr_component;
-                // As this will only be executed in single window mode we don't have
-                // to specify and launch bounds.
-                android_api_stub->launch(
-                  launch_intent, 
-                  graphics::Rect::Invalid, 
-                  // graphics::Rect(600, 500),
-                  // wm::Stack::Id::Default 
-                  wm::Stack::Id::Freeform
-                );
-#endif
                 INFO("ready for launcher app");
               });                           
             });            
 
-            auto const messenger = std::make_shared<anbox::network::LocalSocketMessenger>(std::string(ANBOX_RPC_CHROME_NAME), rt);            
-
-            auto const& connection = std::make_shared<network::SocketConnection>(
-              messenger, messenger, 0, chrome_connections_, std::make_shared<ChromePlatformMessageProcessor>(
-                messenger, pending_calls, android_api_stub
-              )
-            );
-            connection->set_name("chrome_rpc");
-            chrome_connections_->add(connection);
-            connection->read_next_message();
-
-
-            auto const chrome_rpc_channel = connect2(rt, messenger);
-            platform->set_rpc_channel(chrome_rpc_channel);
+            platform->set_rpc_channel(rpc_channel);            
 
             return std::make_shared<bridge::PlatformMessageProcessor>(
-                sender, server, pending_calls, chrome_rpc_channel);
+                sender, server, pending_calls);
           }));
 
   // container::Configuration container_configuration;
@@ -352,8 +256,6 @@ int session(){
 
 int main(int argc, char** argv) {  
   Log().Init(anbox::Logger::Severity::kDebug);  
-
-  DEBUG("main thread: %llX", pthread_self());    
   
   session();
 
