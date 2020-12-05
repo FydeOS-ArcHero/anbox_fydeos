@@ -114,7 +114,7 @@ static_library("anbox_sdk") {
     "src/anbox/bridge/platform_api_skeleton.cpp",
     "src/anbox/bridge/platform_message_processor.cpp",
     "src/anbox/runtime.cpp",
-    "src/anbox/platform/null/platform.cpp",
+    #"src/anbox/platform/null/platform.cpp",
     "src/anbox/network/published_socket_connector.cpp",
     "src/anbox/network/socket_connection.cpp",
     "src/anbox/network/local_socket_messenger.cpp",
