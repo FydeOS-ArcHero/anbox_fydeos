@@ -36,6 +36,7 @@ config("anbox_headers") {
   include_dirs = [
     ".",
     "src",
+    "$target_gen_dir/src",
     "external/android-emugl/host/include",
     "$target_gen_dir/el_gen/external/android-emugl/host/include",
   ]
