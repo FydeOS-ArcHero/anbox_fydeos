@@ -68,7 +68,7 @@ void MultiWindowManager::apply_window_state_update(const WindowState::List &upda
       title = app.name;
 
     if (auto p = platform_.lock()) {
-      auto w = p->create_window(window.task(), window.frame(), title);
+      auto w = p->create_window(window.task(), window.frame(), app.valid() ? app.name : window.package_name(), window.package_name());
       if (w) {
         w->attach();
         windows_.insert({window.task(), w});

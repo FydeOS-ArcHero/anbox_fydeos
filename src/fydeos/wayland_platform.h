@@ -42,7 +42,7 @@ private:
 public:
   WaylandPlatform(const std::shared_ptr<input::Manager> &input_manager);
   virtual ~WaylandPlatform();
-  std::shared_ptr<wm::Window> create_window(const anbox::wm::Task::Id &task, const anbox::graphics::Rect &frame, const std::string &title) override;
+  std::shared_ptr<wm::Window> create_window(const anbox::wm::Task::Id &task, const anbox::graphics::Rect &frame, const std::string &title, const std::string &package_name) override;
 
   void set_clipboard_data(const platform::BasePlatform::ClipboardData &data) override;
   platform::BasePlatform::ClipboardData get_clipboard_data() override;

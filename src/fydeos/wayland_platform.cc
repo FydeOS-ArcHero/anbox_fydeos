@@ -7,6 +7,7 @@
 #include "wayland_touch.h"
 #include "audio_sink.h"
 
+#include "anbox_chrome.pb.h"
 #include "anbox_rpc.pb.h"
 #include "anbox_bridge.pb.h"
 
@@ -207,22 +208,16 @@ void WaylandPlatform::messageLoop(){
 std::shared_ptr<wm::Window> WaylandPlatform::create_window(
   const anbox::wm::Task::Id &task, 
   const anbox::graphics::Rect &frame, 
-  const std::string &title){
+  const std::string &title,
+  const std::string &package_name){
   
   DEBUG("WaylandPlatform::create_window %d %s %d %d %d %d", task, title, frame.left(), frame.top(), frame.width(), frame.height());
   
-  auto w = std::make_shared<anbox::WaylandWindow>(globals_, display_, window_manager_, renderer_, task, frame, scale_, title);
+  auto w = std::make_shared<anbox::WaylandWindow>(globals_, display_, window_manager_, renderer_, task, frame, scale_, title, package_name, channel_);
   if (false == w->init()){
     DEBUG("WaylandWindow init failed.");
     return nullptr;
-  }  
-
-  // anbox::protobuf::bridge::LaunchApplication parameter_message;
-  anbox::protobuf::rpc::Result message;
-  message.set_id(task);
-  message.set_response(title.c_str());  
-  
-  channel_->send_event(message);
+  }    
 
   return w;
 }
@@ -288,7 +283,6 @@ void WaylandPlatform::shell_configuration_changed(void *data,
 				      int32_t work_area_inset_bottom,
 				      uint32_t layout_mode){
   DEBUG("shell_listener configuration_changed %d %d", width, height);
-  __asm__("int3");
 }
 
 void WaylandPlatform::shell_workspace(void *data,
@@ -306,8 +300,7 @@ void WaylandPlatform::shell_workspace(void *data,
 			  int32_t transform,
 			  wl_fixed_t scale_factor,
 			  uint32_t is_internal){
-  DEBUG("shell_listener workspace %d %d %d %d", x, y, width, height);
-  __asm__("int3");
+  DEBUG("shell_listener workspace %d %d %d %d", x, y, width, height);  
 }
 
 void WaylandPlatform::shell_configure(void *data, struct zcr_remote_shell_v1 *zcr_remote_shell_v1, uint32_t layout_mode){

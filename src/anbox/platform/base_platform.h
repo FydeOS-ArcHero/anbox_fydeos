@@ -42,7 +42,7 @@ class BasePlatform {
  public:
   virtual ~BasePlatform() {}
 
-  virtual std::shared_ptr<wm::Window> create_window(const anbox::wm::Task::Id &task, const anbox::graphics::Rect &frame, const std::string &title) = 0;
+  virtual std::shared_ptr<wm::Window> create_window(const anbox::wm::Task::Id &task, const anbox::graphics::Rect &frame, const std::string &title, const std::string &package_name) = 0;
 
   struct ClipboardData {
     std::string text;
