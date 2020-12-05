@@ -44,6 +44,7 @@ class BasePlatform;
 } // namespace platform
 namespace rpc {
 class PendingCallCache;
+class Channel;
 }  // namespace rpc
 namespace wm {
 class Manager;
@@ -58,7 +59,9 @@ class PlatformApiSkeleton {
       const std::shared_ptr<rpc::PendingCallCache> &pending_calls,
       const std::shared_ptr<platform::BasePlatform> &platform,
       const std::shared_ptr<wm::Manager> &window_manager,
-      const std::shared_ptr<application::Database> &app_db);
+      const std::shared_ptr<application::Database> &app_db,
+      const std::shared_ptr<rpc::Channel> &channel      
+      );
   virtual ~PlatformApiSkeleton();
 
   void set_clipboard_data(anbox::protobuf::bridge::ClipboardData const *request,
@@ -82,6 +85,7 @@ class PlatformApiSkeleton {
   std::shared_ptr<platform::BasePlatform> platform_;
   std::shared_ptr<wm::Manager> window_manager_;
   std::shared_ptr<application::Database> app_db_;
+  std::shared_ptr<rpc::Channel> channel_;
   std::function<void()> boot_finished_handler_;
 };
 }  // namespace bridge

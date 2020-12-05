@@ -21,6 +21,7 @@
 #include "anbox/wm/manager.h"
 #include "anbox/wm/window_state.h"
 #include "anbox/logger.h"
+#include "anbox/rpc/channel.h"
 
 #if defined(Status)
 #undef Status
@@ -38,11 +39,13 @@ PlatformApiSkeleton::PlatformApiSkeleton(
     const std::shared_ptr<rpc::PendingCallCache> &pending_calls,
     const std::shared_ptr<platform::BasePlatform> &platform,
     const std::shared_ptr<wm::Manager> &window_manager,
-    const std::shared_ptr<application::Database> &app_db)
+    const std::shared_ptr<application::Database> &app_db,
+    const std::shared_ptr<rpc::Channel> &channel)
     : pending_calls_(pending_calls),
       platform_(platform),
       window_manager_(window_manager),
-      app_db_(app_db) {}
+      app_db_(app_db),
+      channel_(channel) {}
 
 PlatformApiSkeleton::~PlatformApiSkeleton() {}
 
@@ -112,7 +115,9 @@ void PlatformApiSkeleton::handle_application_list_update_event(const anbox::prot
     if (item.package.empty())
       continue;
 
-    app_db_->remove(item);
+    app_db_->remove(item);    
+
+    channel_->call_method(std::string("app_removed"), &app, nullptr, nullptr);    
   }
 
   for (int n = 0; n < event.applications_size(); n++) {
@@ -137,7 +142,9 @@ void PlatformApiSkeleton::handle_application_list_update_event(const anbox::prot
     if (item.package.empty())
       continue;
 
-    app_db_->store_or_update(item);
+    app_db_->store_or_update(item);    
+    
+    channel_->call_method(std::string("app_created"), &app, nullptr, nullptr);    
   }
 }
 
