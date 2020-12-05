@@ -17,6 +17,7 @@
 
 #include "android/service/daemon.h"
 #include "android/service/host_connector.h"
+#include "android/service/chrome_connector.h"
 #include "android/service/platform_service.h"
 
 #include "core/posix/signal.h"
@@ -43,8 +44,11 @@ int Daemon::run() {
         trap->stop();
     });
 
-    auto host_connector = std::make_shared<HostConnector>();
-    host_connector->start();
+    auto chrome_connector = std::make_shared<ChromeConnector>();
+    chrome_connector->start();
+
+    auto host_connector = std::make_shared<HostConnector>(chrome_connector);
+    host_connector->start();    
 
     android::defaultServiceManager()->addService(
                 android::String16(android::PlatformService::service_name()),
