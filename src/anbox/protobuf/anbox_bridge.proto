@@ -83,13 +83,14 @@ message WindowStateUpdateEvent {
     repeated WindowState removed_windows = 2;
 }
 
-message ApplicationListUpdateEvent {
-    message Application {
-        required string name = 1;
-        required string package = 2;
-        optional Intent launch_intent = 3;
-        optional bytes icon = 4;
-    }
+message Application {
+    required string name = 1;
+    required string package = 2;
+    optional Intent launch_intent = 3;
+    optional bytes icon = 4;
+}
+
+message ApplicationListUpdateEvent {    
     repeated Application applications = 1;
     repeated Application removed_applications = 2;
 }
