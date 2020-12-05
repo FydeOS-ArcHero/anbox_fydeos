@@ -27,8 +27,10 @@ LOCAL_SRC_FILES := \
     android/service/main.cpp \
     android/service/daemon.cpp \
     android/service/host_connector.cpp \
+		android/service/chrome_connector.cpp \
     android/service/local_socket_connection.cpp \
     android/service/message_processor.cpp \
+		android/service/chrome_message_processor.cpp \
     android/service/activity_manager_interface.cpp \
     android/service/android_api_skeleton.cpp \
     android/service/platform_service_interface.cpp \
@@ -40,7 +42,8 @@ LOCAL_SRC_FILES := \
     src/anbox/rpc/pending_call_cache.cpp \
     src/anbox/rpc/channel.cpp \
     src/anbox/protobuf/anbox_rpc.proto \
-    src/anbox/protobuf/anbox_bridge.proto
+    src/anbox/protobuf/anbox_bridge.proto \
+		src/anbox/protobuf/anbox_chrome.proto
 proto_header_dir := $(call local-generated-sources-dir)/proto/$(LOCAL_PATH)/src/anbox/protobuf
 LOCAL_C_INCLUDES += \
     $(proto_header_dir) \
