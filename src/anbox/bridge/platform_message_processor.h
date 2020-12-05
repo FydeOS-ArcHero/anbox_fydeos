@@ -29,8 +29,7 @@ class PlatformMessageProcessor : public rpc::MessageProcessor {
   PlatformMessageProcessor(
       const std::shared_ptr<network::MessageSender> &sender,
       const std::shared_ptr<PlatformApiSkeleton> &server,
-      const std::shared_ptr<rpc::PendingCallCache> &pending_calls,
-      const std::shared_ptr<rpc::Channel> &channel);
+      const std::shared_ptr<rpc::PendingCallCache> &pending_calls);
   ~PlatformMessageProcessor();
 
   void dispatch(rpc::Invocation const &invocation) override;
