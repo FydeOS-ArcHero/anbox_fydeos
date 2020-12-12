@@ -636,15 +636,11 @@ void WaylandWindow::unbind(anbox::fydeos::Buffer_Ext *pExt){
 
 void WaylandWindow::shell_surface_close(void *data,
 		      struct zcr_remote_surface_v1 *zcr_remote_surface_v1){
-  DEBUG("surface_listener close");
+  DEBUG("WaylandWindow::shell_surface_close");
 
-  WaylandWindow *window = (WaylandWindow *)data;
-  // zcr_remote_shell_v1_destroy(zcr_remote_surface_v1);    
-
-  window->window_manager_->remove_task(window->task());  
-  zcr_remote_surface_v1_destroy(zcr_remote_surface_v1);
-
-  // delete window;
+  WaylandWindow *window = (WaylandWindow *)data;  
+  window->remote_shell_surface_.reset();
+  window->window_manager_->remove_task(window->task());      
 }
 
 void WaylandWindow::shell_surface_state_type_changed(void *data,

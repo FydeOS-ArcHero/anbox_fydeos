@@ -12,26 +12,16 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-// #include <sys/types.h>
-// #include <sys/stat.h>
-// #include <fcntl.h>
-
 #include "renderer.h"
 #include "wayland_helper.h"
 #include "anbox_input.h"
 
-// #include "ui/gfx/geometry/size.h"
-// #include "base/strings/stringprintf.h"
-// #include "base/files/scoped_file.h"
-// #include "base/time/time.h"
-// #include "base/containers/circular_deque.h"
 
 #include "../anbox/logger.h"
 #include "../anbox/wm/window.h"
 #include "../anbox/wm/manager.h"
 #include "../anbox/graphics/renderer.h"
 #include "../anbox/rpc/channel.h"
-// #include "external/android-emugl/host/include/OpenGLESDispatch/EGLDispatch.h"
 
 #include "anbox_chrome.pb.h"
 
@@ -116,15 +106,14 @@ public:
     const std::string &package_name,
     const std::shared_ptr<rpc::Channel> &channel);
   
-  virtual ~WaylandWindow(){    
-    surface_.release();
-    remote_shell_surface_.release();
+  virtual ~WaylandWindow(){
+    remote_shell_surface_.reset();
+    surface_.reset();
 
     anbox::protobuf::chrome::RemovedTask message;
     message.set_id(task());      
 
-    channel_->call_method("task_removed", &message, nullptr, nullptr);
-
+    channel_->call_method("task_removed", &message, nullptr, nullptr);    
 
     DEBUG("WaylandWindow::~WaylandWindow");    
   }
