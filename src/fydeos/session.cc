@@ -101,7 +101,7 @@ int session(){
 
   auto app_manager = std::make_shared<application::RestrictedManager>(android_api_stub, wm::Stack::Id::Freeform);    
 
-  auto audio_server = std::make_shared<audio::Server>(rt, platform);
+  // auto audio_server = std::make_shared<audio::Server>(rt, platform);
 
   const auto socket_path = SystemConfiguration::instance().socket_dir();  
 
@@ -201,10 +201,10 @@ int session(){
 
   chmod("/run/chrome/anbox/sockets/anbox_bridge", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
   chmod("/run/chrome/anbox/sockets/qemu_pipe", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  chmod("/run/chrome/anbox/sockets/anbox_audio", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+  // chmod("/run/chrome/anbox/sockets/anbox_audio", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
   chown("/run/chrome/anbox/sockets/anbox_bridge", 656360, 656360);  
   chown("/run/chrome/anbox/sockets/qemu_pipe", 656360, 656360);
-  chown("/run/chrome/anbox/sockets/anbox_audio", 656360, 656360);
+  // chown("/run/chrome/anbox/sockets/anbox_audio", 656360, 656360);
   chown("/run/chrome/anbox/input", 656360, 656360);
 
   chmod((SystemConfiguration::instance().input_device_dir() + "/event0").data(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);

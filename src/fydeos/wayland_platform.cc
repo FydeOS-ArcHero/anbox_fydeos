@@ -5,7 +5,6 @@
 #include "wayland_pointer.h"
 #include "wayland_keyboard.h"
 #include "wayland_touch.h"
-#include "audio_sink.h"
 
 #include "anbox_chrome.pb.h"
 #include "anbox_rpc.pb.h"
@@ -229,12 +228,6 @@ void WaylandPlatform::set_clipboard_data(const platform::BasePlatform::Clipboard
 platform::BasePlatform::ClipboardData WaylandPlatform::get_clipboard_data(){
   DEBUG("WaylandPlatform::get_clipboard_data");
   return platform::BasePlatform::ClipboardData{};
-}
-
-std::shared_ptr<audio::Sink> WaylandPlatform::create_audio_sink(){
-  DEBUG("WaylandPlatform::create_audio_sink");  
-
-  return std::make_shared<fydeos::AudioSink>();  
 }
 
 void WaylandPlatform::set_renderer(const std::shared_ptr<Renderer> &renderer){

@@ -47,7 +47,7 @@ public:
   void set_clipboard_data(const platform::BasePlatform::ClipboardData &data) override;
   platform::BasePlatform::ClipboardData get_clipboard_data() override;
 
-  std::shared_ptr<audio::Sink> create_audio_sink() override;
+  std::shared_ptr<audio::Sink> create_audio_sink() override { return nullptr; }
   std::shared_ptr<audio::Source> create_audio_source() override { return nullptr; }
 
   void set_renderer(const std::shared_ptr<Renderer> &renderer) override;
