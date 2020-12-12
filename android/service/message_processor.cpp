@@ -62,41 +62,27 @@ void MessageProcessor::dispatch(rpc::Invocation const& invocation) {
 }
 
 void MessageProcessor::app_created(anbox::protobuf::bridge::Application const *request,
-                                     anbox::protobuf::rpc::Void *response,
-                                     google::protobuf::Closure *done) {
-  ALOGI("== MessageProcessor::app_created");
+                                     anbox::protobuf::rpc::Void* /*response*/,
+                                     google::protobuf::Closure* /*done*/) {  
   chrome_rpc_channel_->call_method("app_created", request, nullptr, nullptr);
-
-  (void)response;
-  (void)done;
 }
 
 void MessageProcessor::app_removed(anbox::protobuf::bridge::Application const *request,
-                                     anbox::protobuf::rpc::Void *response,
-                                     google::protobuf::Closure *done) {
-  ALOGI("== MessageProcessor::app_removed");                                     
-  chrome_rpc_channel_->call_method("app_removed", request, nullptr, nullptr);                                     
-
-  (void)response;
-  (void)done;
+                                     anbox::protobuf::rpc::Void* /*response*/,
+                                     google::protobuf::Closure* /*done*/) {  
+  chrome_rpc_channel_->call_method("app_removed", request, nullptr, nullptr);
 }
 
 void MessageProcessor::task_created(anbox::protobuf::chrome::CreatedTask const *request,
-                                     anbox::protobuf::rpc::Void *response,
-                                     google::protobuf::Closure *done) {  
+                                     anbox::protobuf::rpc::Void* /*response*/,
+                                     google::protobuf::Closure* /*done*/) {  
   chrome_rpc_channel_->call_method("task_created", request, nullptr, nullptr);
-
-  (void)response;
-  (void)done;
 }
 
 void MessageProcessor::task_removed(anbox::protobuf::chrome::RemovedTask const *request,
-                                     anbox::protobuf::rpc::Void *response,
-                                     google::protobuf::Closure *done) {  
+                                     anbox::protobuf::rpc::Void* /*response*/,
+                                     google::protobuf::Closure* /*done*/) {  
   chrome_rpc_channel_->call_method("task_removed", request, nullptr, nullptr);
-
-  (void)response;
-  (void)done;
 }
 
 void MessageProcessor::process_event_sequence(const std::string&) {
