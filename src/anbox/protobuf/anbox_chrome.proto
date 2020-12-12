@@ -11,3 +11,10 @@ message CreatedTask {
 message RemovedTask {
   required int32 id = 1; 
 }
+
+message InstallApp{
+  required string name = 1;
+  required int32 pos = 2;
+  required int32 size = 3;
+  required bytes data = 4;
+}
