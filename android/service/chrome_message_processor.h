@@ -22,6 +22,19 @@
 
 namespace anbox {
 class AndroidApiSkeleton;
+
+namespace protobuf {
+namespace chrome {
+class InstallApp;  
+}
+
+namespace rpc {
+class Void;
+} // namespace rpc
+}
+
+
+class InstallApplication;
 class ChromeMessageProcessor : public rpc::MessageProcessor {
 public:
     ChromeMessageProcessor(const std::shared_ptr<network::MessageSender> &sender,
@@ -31,6 +44,10 @@ public:
 
     void dispatch(rpc::Invocation const& invocation) override;
     void process_event_sequence(const std::string &event) override;
+
+    void install_app(anbox::protobuf::chrome::InstallApp const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done);
 
 private:
     std::shared_ptr<AndroidApiSkeleton> platform_api_;    

@@ -17,11 +17,14 @@
 
 #define LOG_TAG "Anboxd"
 
+#include<fcntl.h>
+
 #include "android/service/chrome_message_processor.h"
 #include "android/service/android_api_skeleton.h"
 
 #include "anbox/rpc/template_message_processor.h"
 
+#include "anbox_chrome.pb.h"
 #include "anbox_rpc.pb.h"
 #include "anbox_bridge.pb.h"
 
@@ -47,6 +50,39 @@ void ChromeMessageProcessor::dispatch(rpc::Invocation const& invocation) {
     invoke(this, platform_api_.get(), &AndroidApiSkeleton::remove_task, invocation);
   else if (invocation.method_name() == "resize_task")
     invoke(this, platform_api_.get(), &AndroidApiSkeleton::resize_task, invocation);  
+  //////////////////////////////////////////////
+  else if (invocation.method_name() == "install_app")  
+    invoke(this, this, &ChromeMessageProcessor::install_app, invocation);
+}
+
+void ChromeMessageProcessor::install_app(anbox::protobuf::chrome::InstallApp const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done) {                                       
+  ALOGI("== ChromeMessageProcessor::install_app %s %d %d %lu", request->name().c_str(), request->pos(), request->size(), request->data().size());
+
+  (void)response;
+  std::string file_path = std::string("/data/local/") + request->name().c_str();  
+  
+  if (request->size() > 0){
+    auto fd = open(file_path.c_str(), O_RDWR|O_CREAT, 0766);
+    if (fd <= 0){
+      ALOGI("== ChromeMessageProcessor::install_app open file failed %s", file_path.c_str());
+
+      done->Run();
+      return;
+    }
+
+    lseek(fd, request->pos(), SEEK_SET);
+    write(fd, request->data().c_str(), request->data().size());
+
+    close(fd);
+
+    done->Run();
+  }else{
+    platform_api_->install_app(file_path, response, done);    
+
+    remove(file_path.c_str());
+  }  
 }
 
 void ChromeMessageProcessor::process_event_sequence(const std::string&) {

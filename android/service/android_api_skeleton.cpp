@@ -173,4 +173,22 @@ void AndroidApiSkeleton::resize_task(anbox::protobuf::bridge::ResizeTask const *
 
   done->Run();
 }
+
+void AndroidApiSkeleton::install_app(const std::string &file_path, anbox::protobuf::rpc::Void *response,
+                     google::protobuf::Closure *done){
+  ALOGI("=== AndroidApiSkeleton::install_app %s", file_path.c_str());
+
+  std::vector<std::string> argv = {
+    "/system/bin/am",
+    "start",
+    "--stack", "2",
+    "-n", "com.android.packageinstaller/com.android.packageinstaller.PackageInstallerActivity",
+    "-d", (std::string("file://") + file_path).c_str()    
+  };
+
+  auto process = core::posix::exec("/system/bin/sh", argv, common_env, core::posix::StandardStream::empty);
+  wait_for_process(process, response);
+
+  done->Run();
+}
 } // namespace anbox
