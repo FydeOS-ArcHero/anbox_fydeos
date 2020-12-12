@@ -134,7 +134,8 @@ static_library("anbox_sdk") {
     "src/anbox/application/launcher_storage.cpp",
     "src/anbox/system_configuration.cpp",
     "src/anbox/graphics/rect.cpp",    
-    "src/anbox/utils.cpp",
+    "src/anbox/graphics/buffer_queue.cpp",
+    "src/anbox/utils.cpp",    
     "external/xdg/xdg.cpp",
   ]  
 
