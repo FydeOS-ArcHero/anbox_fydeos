@@ -43,6 +43,78 @@
 
 using namespace anbox;
 
+pid_t waitPID(pid_t child_spec, int timeout, int* status_out) {  
+
+  auto const start = std::chrono::high_resolution_clock::now();  
+
+  while (true) {
+    pid_t pid = waitpid(child_spec, status_out, WNOHANG);
+
+    // Error (including no children remaining).
+    if (pid == -1 && errno != EINTR)
+      return -1;
+
+    // Process was reaped.
+    if (pid > 0)
+      return pid;
+
+    auto t = duration_cast<std::chrono::duration<double, std::ratio<1, 1000>>>(std::chrono::high_resolution_clock::now() - start);
+    if (t.count() > timeout){
+      return 0;
+    }    
+
+    usleep(1000 * 10);    
+  }
+}
+
+void EnsureContainerExit(){
+  try{
+    auto containerPid = atoi(
+      utils::read_file_if_exists_or_throw("/run/containers/android-anbox/container.pid").data()
+    );
+
+    DEBUG("kill android-anbox %d", containerPid);
+    kill(containerPid, SIGKILL);    
+
+    DEBUG("destroy android-anbox");
+    std::vector<std::string> argv;
+    argv.push_back(std::string("destroy"));
+    argv.push_back(std::string("android-anbox"));
+
+    std::map<std::string, std::string> env;
+    // env.insert(std::make_pair(std::string("XDG_RUNTIME_DIR"), std::string("/run/chrome")));  
+    auto p1 = core::posix::exec(std::string("/usr/bin/run_oci"), argv, env, core::posix::StandardStream::empty);
+    p1.dont_kill_on_cleanup();
+    // run_oci destroy android-anbox
+
+    waitPID(containerPid, 1000 * 15, nullptr);
+  } catch (std::exception &err) {    
+  }    
+}
+
+bool startContainer(){
+  DEBUG("start android-anbox");
+  std::vector<std::string> argv;  
+  argv.push_back(std::string("--container_path=/opt/google/containers/anbox"));  
+  argv.push_back(std::string("start"));
+  argv.push_back(std::string("android-anbox"));  
+
+  std::map<std::string, std::string> env;
+  // env.insert(std::make_pair(std::string("XDG_RUNTIME_DIR"), std::string("/run/chrome")));  
+  auto p = core::posix::exec(std::string("/usr/bin/run_oci"), argv, env, core::posix::StandardStream::empty);
+  p.dont_kill_on_cleanup();
+
+  auto result = p.wait_for(core::posix::wait::Flags::untraced);
+  if (result.status != core::posix::wait::Result::Status::exited ||
+        result.detail.if_exited.status != core::posix::exit::Status::success){
+
+    DEBUG("start android-anbox failed");
+    return false;      
+  }
+
+  return true;
+}
+
 int session(){
   auto trap = core::posix::trap_signals_for_process(
         {core::posix::Signal::sig_term, core::posix::Signal::sig_int});
@@ -212,40 +284,12 @@ int session(){
   chmod((SystemConfiguration::instance().input_device_dir() + "/event2").data(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
   chown((SystemConfiguration::instance().input_device_dir() + "/event0").data(), 656360, 656360);
   chown((SystemConfiguration::instance().input_device_dir() + "/event1").data(), 656360, 656360);
-  chown((SystemConfiguration::instance().input_device_dir() + "/event2").data(), 656360, 656360);
+  chown((SystemConfiguration::instance().input_device_dir() + "/event2").data(), 656360, 656360);    
 
-  chdir("/opt/google/containers/anbox");
+  if (false == startContainer()){
+    return 1;
+  }
 
-  try{
-    auto containerPid = utils::read_file_if_exists_or_throw("/run/containers/android-anbox/container.pid");
-
-    DEBUG("kill android-anbox %s", containerPid);
-    kill(atoi(containerPid.data()), SIGKILL);
-
-    DEBUG("destroy android-anbox");
-    std::vector<std::string> argv;
-    argv.push_back(std::string("destroy"));
-    argv.push_back(std::string("android-anbox"));
-
-    std::map<std::string, std::string> env;
-    // env.insert(std::make_pair(std::string("XDG_RUNTIME_DIR"), std::string("/run/chrome")));  
-    auto p1 = core::posix::exec(std::string("/usr/bin/run_oci"), argv, env, core::posix::StandardStream::empty);
-    p1.dont_kill_on_cleanup();
-    // run_oci destroy android-anbox
-  } catch (std::exception &err) {    
-  }  
-  
-  DEBUG("start android-anbox");
-  std::vector<std::string> argv;
-  argv.push_back(std::string("start"));
-  argv.push_back(std::string("android-anbox"));
-
-  std::map<std::string, std::string> env;
-  // env.insert(std::make_pair(std::string("XDG_RUNTIME_DIR"), std::string("/run/chrome")));  
-  auto p1 = core::posix::exec(std::string("/usr/bin/run_oci"), argv, env, core::posix::StandardStream::empty);
-  p1.dont_kill_on_cleanup();
-
-  DEBUG("start rt");
   rt->start();    
   trap->run();
 
@@ -257,7 +301,11 @@ int session(){
 int main(int argc, char** argv) {  
   Log().Init(anbox::Logger::Severity::kDebug);  
   
-  session();
+  EnsureContainerExit();
+  auto r = session();
+  if (r != 0){
+    return r;
+  }
 
   return 0;
 }
