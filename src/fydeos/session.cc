@@ -257,11 +257,7 @@ int session(){
   //   {"/dev/binder", {0666}},
   //   {"/dev/ashmem", {0666}},
   //   {"/dev/fuse", {0666}},
-  // };
-
-  // dispatcher->dispatch([&]() {
-  //   container_->start(container_configuration);
-  // });
+  // };  
 
   // auto bus_type = anbox::dbus::Bus::Type::Session;
   // if (use_system_dbus_)
@@ -270,25 +266,23 @@ int session(){
 
   // auto skeleton = anbox::dbus::skeleton::Service::create_for_bus(bus, app_manager);
   // bus->run_async();  
+  
+  chmod((SystemConfiguration::instance().socket_dir() + "/anbox_bridge").data(), S_IRWXU|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+  chmod((SystemConfiguration::instance().socket_dir() + "/qemu_pipe").data(), S_IRWXU|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);  
+  chown((SystemConfiguration::instance().socket_dir() + "/anbox_bridge").data(), 656360, 656360);  
+  chown((SystemConfiguration::instance().socket_dir() + "/qemu_pipe").data(), 656360, 656360);  
+  chown(SystemConfiguration::instance().input_device_dir().data(), 656360, 656360);
 
-  chmod("/run/chrome/anbox/sockets/anbox_bridge", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  chmod("/run/chrome/anbox/sockets/qemu_pipe", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  // chmod("/run/chrome/anbox/sockets/anbox_audio", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  chown("/run/chrome/anbox/sockets/anbox_bridge", 656360, 656360);  
-  chown("/run/chrome/anbox/sockets/qemu_pipe", 656360, 656360);
-  // chown("/run/chrome/anbox/sockets/anbox_audio", 656360, 656360);
-  chown("/run/chrome/anbox/input", 656360, 656360);
-
-  chmod((SystemConfiguration::instance().input_device_dir() + "/event0").data(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  chmod((SystemConfiguration::instance().input_device_dir() + "/event1").data(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  chmod((SystemConfiguration::instance().input_device_dir() + "/event2").data(), S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+  chmod((SystemConfiguration::instance().input_device_dir() + "/event0").data(), S_IRWXU|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+  chmod((SystemConfiguration::instance().input_device_dir() + "/event1").data(), S_IRWXU|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+  chmod((SystemConfiguration::instance().input_device_dir() + "/event2").data(), S_IRWXU|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
   chown((SystemConfiguration::instance().input_device_dir() + "/event0").data(), 656360, 656360);
   chown((SystemConfiguration::instance().input_device_dir() + "/event1").data(), 656360, 656360);
   chown((SystemConfiguration::instance().input_device_dir() + "/event2").data(), 656360, 656360);    
 
   if (false == startContainer()){
     return 1;
-  }
+  }  
 
   rt->start();    
   trap->run();
