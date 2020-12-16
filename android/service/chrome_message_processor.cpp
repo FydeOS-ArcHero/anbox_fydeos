@@ -80,8 +80,6 @@ void ChromeMessageProcessor::install_app(anbox::protobuf::chrome::InstallApp con
     done->Run();
   }else{
     platform_api_->install_app(file_path, response, done);    
-
-    remove(file_path.c_str());
   }  
 }
 
