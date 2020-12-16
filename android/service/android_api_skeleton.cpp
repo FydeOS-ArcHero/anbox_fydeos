@@ -183,7 +183,8 @@ void AndroidApiSkeleton::install_app(const std::string &file_path, anbox::protob
     "start",
     "--stack", "2",
     "-n", "com.android.packageinstaller/com.android.packageinstaller.PackageInstallerActivity",
-    "-d", (std::string("file://") + file_path).c_str()    
+    "-d", (std::string("file://") + file_path).c_str(),
+    "--ez", "close_on_installed", "true"    
   };
 
   auto process = core::posix::exec("/system/bin/sh", argv, common_env, core::posix::StandardStream::empty);
