@@ -38,4 +38,9 @@ wait $!
 
 echo "Starting real init now ..."
 ln -s /dev/pts/ptmx /dev/ptmx
+
+for n in "default" "read" "write"; do
+  mkdir -p /mnt/runtime/$n/emulated  
+done
+
 exec /init
