@@ -2,14 +2,20 @@
 
 rootfs=$1
 
-wget https://github.com/redchenjs/aur-packages/raw/master/anbox-image/houdini_y.sfs -O /tmp/houdini_y.sfs
+if [ -f "$rootfs/system/lib/arm/libhoudini.so $rootfs/system/lib/libhoudini.so" ]; then
+  exit
+fi
+     
+wget https://github.com/redchenjs/aur-packages/releases/download/anbox-image/houdini_y.sfs -O /tmp/houdini_y.sfs
+if [ $? != "0" ]; then exit 1; fi
 unsquashfs -f -d ./houdini_y /tmp/houdini_y.sfs
 
 mkdir -p $rootfs/system/lib/arm
 cp -r ./houdini_y/* $rootfs/system/lib/arm
 mv $rootfs/system/lib/arm/libhoudini.so $rootfs/system/lib/libhoudini.so
 
-wget https://github.com/redchenjs/aur-packages/raw/master/anbox-image/houdini_z.sfs -O /tmp/houdini_z.sfs
+wget https://github.com/redchenjs/aur-packages/releases/download/anbox-image/houdini_z.sfs -O /tmp/houdini_z.sfs
+if [ $? != "0" ]; then exit 1; fi
 unsquashfs -f -d ./houdini_z /tmp/houdini_z.sfs
 
 mkdir -p $rootfs/system/lib64/arm64
@@ -57,3 +63,5 @@ echo 'ro.opengles.version=131072' >> $rootfs/system/build.prop
 
 # install media codecs
 cp $(dirname $0)/houdini/media_codec*.xml $rootfs/system/etc/
+
+rm -rf ./houdini_z/ ./houdini_y/
