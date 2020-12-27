@@ -25,7 +25,8 @@ class AndroidApiSkeleton;
 
 namespace protobuf {
 namespace chrome {
-class InstallApp;  
+class InstallApp;
+class UninstallApp;  
 }
 
 namespace rpc {
@@ -48,6 +49,9 @@ public:
     void install_app(anbox::protobuf::chrome::InstallApp const *request,
                                      anbox::protobuf::rpc::Void *response,
                                      google::protobuf::Closure *done);
+    void uninstall_app(anbox::protobuf::chrome::UninstallApp const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done);                                 
 
 private:
     std::shared_ptr<AndroidApiSkeleton> platform_api_;    

@@ -68,6 +68,9 @@ public:
                      google::protobuf::Closure *done);
 
     void install_app(const std::string &file_path, anbox::protobuf::rpc::Void *response,
+                     google::protobuf::Closure *done);
+
+    void uninstall_app(const std::string &package, anbox::protobuf::rpc::Void *response,
                      google::protobuf::Closure *done);                 
 
 private:

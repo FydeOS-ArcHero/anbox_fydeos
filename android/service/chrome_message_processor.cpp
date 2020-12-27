@@ -53,6 +53,8 @@ void ChromeMessageProcessor::dispatch(rpc::Invocation const& invocation) {
   //////////////////////////////////////////////
   else if (invocation.method_name() == "install_app")  
     invoke(this, this, &ChromeMessageProcessor::install_app, invocation);
+  else if (invocation.method_name() == "uninstall_app")  
+    invoke(this, this, &ChromeMessageProcessor::uninstall_app, invocation);  
 }
 
 void ChromeMessageProcessor::install_app(anbox::protobuf::chrome::InstallApp const *request,
@@ -81,6 +83,14 @@ void ChromeMessageProcessor::install_app(anbox::protobuf::chrome::InstallApp con
   }else{
     platform_api_->install_app(file_path, response, done);    
   }  
+}
+
+void ChromeMessageProcessor::uninstall_app(anbox::protobuf::chrome::UninstallApp const *request,
+                                     anbox::protobuf::rpc::Void *response,
+                                     google::protobuf::Closure *done) {     
+  ALOGI("== ChromeMessageProcessor::uninstall_app %s %s", request->package_name().c_str(), request->component_name().c_str());
+
+  platform_api_->uninstall_app(request->package_name(), response, done);
 }
 
 void ChromeMessageProcessor::process_event_sequence(const std::string&) {

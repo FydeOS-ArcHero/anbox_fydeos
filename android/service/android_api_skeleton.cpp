@@ -192,4 +192,18 @@ void AndroidApiSkeleton::install_app(const std::string &file_path, anbox::protob
 
   done->Run();
 }
+
+void AndroidApiSkeleton::uninstall_app(const std::string &package, anbox::protobuf::rpc::Void *response,
+                     google::protobuf::Closure *done){
+  std::vector<std::string> argv = {
+    "/system/bin/pm",
+    "uninstall", package    
+  };
+
+  auto process = core::posix::exec("/system/bin/sh", argv, common_env, core::posix::StandardStream::empty);
+  wait_for_process(process, response);
+
+  done->Run();                     
+}
+
 } // namespace anbox
